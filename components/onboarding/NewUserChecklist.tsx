@@ -65,7 +65,8 @@ function captureSetup(event: string, properties?: Record<string, unknown>) {
  * Done steps collapse to their title.
  * The persisted state machine is unchanged (path / completedAt /
  * dismissedAt via /api/onboarding/state); "Starta från början" records the
- * fresh path and simply checks off step one.
+ * fresh path and simply checks off step one. That choice stays reversible:
+ * the done row carries an "Ändra" link that clears the path again.
  */
 export default function NewUserChecklist({
   initialState,
@@ -85,7 +86,7 @@ export default function NewUserChecklist({
   const { formatDateLong } = useFormat()
   const hasAi = useCapability(CAPABILITY.ai)
   const [state, setState] = useState(initialState)
-  const [saving, setSaving] = useState<InitialSetupPath | 'dismiss' | 'complete' | null>(null)
+  const [saving, setSaving] = useState<InitialSetupPath | 'dismiss' | 'complete' | 'reset' | null>(null)
   // The completion signature: 'verdict' shows the orb check-morph and the
   // verdict line, 'closing' fades the block, 'done' keeps it retired for the
   // rest of the session. Plays only in the session that finishes the last
@@ -105,7 +106,7 @@ export default function NewUserChecklist({
 
   const persist = async (
     body: Record<string, unknown>,
-    pending: InitialSetupPath | 'dismiss' | 'complete',
+    pending: InitialSetupPath | 'dismiss' | 'complete' | 'reset',
   ): Promise<InitialSetupState | null> => {
     setSaving(pending)
     try {
@@ -130,6 +131,11 @@ export default function NewUserChecklist({
   }
 
   const step1Done = hasBookkeepingImported || state.path === 'fresh'
+  // "Starta från början" (or the onboarding branch "ny verksamhet") checks
+  // step one off by choice, not by evidence. Keep that choice reversible:
+  // the done row carries an "Ändra" link that clears the path so the step
+  // reopens with both the import action and the fresh link.
+  const step1DoneByChoice = !hasBookkeepingImported && state.path === 'fresh'
   const step2Done = hasBankConnected
   // Companies built without the skatteverket/inbox extensions skip those steps.
   const step3Done = !hasSkatteverket || hasSkatteverketConnected
@@ -211,6 +217,10 @@ export default function NewUserChecklist({
   const goFresh = () =>
     void persist({ path: 'fresh' }, 'fresh').then((updated) => {
       if (updated) captureSetup('onboarding_setup_step_started', { step: 'books', path: 'fresh' })
+    })
+  const resetBooks = () =>
+    void persist({ path: null }, 'reset').then((updated) => {
+      if (updated) captureSetup('onboarding_setup_step_reopened', { step: 'books' })
     })
   const goBank = async () => {
     const updated = await persist({ path: state.path ?? 'bank' }, 'bank')
@@ -297,6 +307,18 @@ export default function NewUserChecklist({
               <LogoMark src="/logos/bokio.png" name="Bokio" />
               <span className="text-[11px] text-muted-foreground">{t('step_books_sie')}</span>
             </>
+          }
+          doneNote={
+            step1DoneByChoice ? (
+              <button
+                type="button"
+                disabled={saving !== null}
+                onClick={resetBooks}
+                className="underline decoration-border underline-offset-4 transition-colors hover:text-foreground"
+              >
+                {t('step_books_change')}
+              </button>
+            ) : undefined
           }
         >
           {t('step_books_description')}{' '}
