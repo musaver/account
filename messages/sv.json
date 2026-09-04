@@ -1528,6 +1528,7 @@
     "step_books_fresh_link": "Starta från början",
     "step_books_fresh_suffix": "i stället.",
     "step_books_action": "Flytta bokföringen",
+    "step_books_change": "Ändra",
     "step_books_sie": "+ SIE",
     "step_bank_title": "Koppla banken",
     "step_bank_description": "Hämta transaktioner automatiskt, eller importera ett kontoutdrag.",

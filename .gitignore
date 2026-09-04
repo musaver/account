@@ -102,3 +102,6 @@ scripts/reopen-bokslut.sql
 # part of the app. The integration itself lives in lib/analytics/ and
 # instrumentation-client.ts.
 .posthog/
+branch_structure.json
+temp_auto_push.bat
+temp_interactive_push.bat

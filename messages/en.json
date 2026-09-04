@@ -1528,6 +1528,7 @@
     "step_books_fresh_link": "Start from scratch",
     "step_books_fresh_suffix": "instead.",
     "step_books_action": "Move the books",
+    "step_books_change": "Change",
     "step_books_sie": "+ SIE",
     "step_bank_title": "Connect the bank",
     "step_bank_description": "Fetch transactions automatically, or import a bank statement.",
